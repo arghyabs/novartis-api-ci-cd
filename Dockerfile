@@ -7,5 +7,4 @@ COPY requirements.txt .
 COPY dist/calculator /opt/calculator/
 
 EXPOSE 80
-
 CMD [ "./calculator" ]

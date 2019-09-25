@@ -7,6 +7,20 @@ jobs:
 
     working_directory: ~/repo
 
+    environment:
+      DEPLOYMENT_NAME: ci-cd
+      PROJECT_ID: api-ci-cd
+      CLUSTER_NAME: ci-cd
+      CLUSTER_NAME_STAG: ci-cd-stag
+      CLOUDSDK_COMPUTE_ZONE: us-west1-a
+      CONTAINER_NAME: ci-cd
+      IMAGE: ci-cd
+      REG_ID: ci-cd
+      REG_ID_PROD: ci-cd-prod
+      IMG_TAG: 0.1.0
+      PROJECT_NAME: ci-cd
+      DEPLOYMENT_ENVIRONMENT: staging
+
     steps:
       # Step 1: obtain repo from GitHub
       - checkout
@@ -16,6 +30,13 @@ jobs:
           command: |
             echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
             echo 'export IMAGE_NAME=python-circleci-docker' >> $BASH_ENV
+            echo $ACCOUNT_KEY_STAGING > service_key.txt
+            base64 -i service_key.txt -d > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account ${ACCOUNT_ID} --key-file ${HOME}/gcloud-service-key.json
+            gcloud config set project $PROJECT_ID
+            gcloud --quiet config set container/cluster $CLUSTER_NAME
+            gcloud config set compute/zone $CLOUDSDK_COMPUTE_ZONE
+            gcloud --quiet container clusters get-credentials $CLUSTER_NAME
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt

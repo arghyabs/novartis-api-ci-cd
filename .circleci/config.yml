@@ -33,7 +33,7 @@ jobs:
           command: |
             . venv/bin/activate
             pyinstaller -F calculator.py
-	    docker build -t ${IMAGE_NAME} .
-	    docker tag ${IMAGE_NAME} gcr.io/${PROJECT_ID}/${IMAGE_NAME}:$TAG
+            docker build -t ${IMAGE_NAME} .
+            docker tag ${IMAGE_NAME} gcr.io/${PROJECT_ID}/${IMAGE_NAME}:$TAG
             gcloud auth configure-docker
-	    gcloud docker -- push gcr.io/${PROJECT_ID}/${IMAGE_NAME}:$TAG
+            gcloud docker -- push gcr.io/${PROJECT_ID}/${IMAGE_NAME}:$TAG

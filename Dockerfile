@@ -1,10 +1,10 @@
 FROM python:3.7
 
-RUN mkdir /opt/calculator/
-WORKDIR /opt/calculator/
-
+RUN mkdir /calculator/
 COPY requirements.txt .
-COPY dist/calculator /opt/calculator/
+COPY calculator.py /calculator/
+COPY test_calculator.py /calculator/
+WORKDIR /calculator/
 
 EXPOSE 80
-CMD [ "./calculator" ]
+CMD ["python", "/calculator/calculator.py" ]

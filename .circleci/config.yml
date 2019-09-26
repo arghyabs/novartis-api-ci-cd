@@ -73,6 +73,9 @@ jobs:
             docker build -t ${IMAGE} .
             docker tag ${IMAGE} gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
             gcloud docker -- push gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
+            kubectl delete deployment --all --ignore-not-found
+            kubectl create deployment ${DEPLOYMENT_NAME} --image=gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
+            kubectl get pods
 workflows:
    version: 2
    build_test_deploy:

@@ -64,7 +64,7 @@ jobs:
       - run: 
           name: Docker build and push
           command: |
-            echo "${IMAGE} ${IMG_TAG}"
+            echo "${IMAGE}  ${IMG_TAG}"
             . venv/bin/activate
             pyinstaller -F calculator.py
             docker build -t ${IMAGE} .

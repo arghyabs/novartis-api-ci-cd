@@ -65,6 +65,7 @@ jobs:
           name: Docker build and push
           command: |
             echo "${IMAGE}  ${IMG_TAG}"
+            apt-get install python3-venv
             python3 -m venv venv
             . venv/bin/activate
             pyinstaller -F calculator.py

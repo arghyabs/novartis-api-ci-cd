@@ -1,0 +1,70 @@
+# Python CircleCI 2.0 configuration file
+version: 2
+jobs:
+  build_and_test:
+    docker:
+      - image: circleci/python:3.7
+    working_directory: ~/repo
+    steps:
+      # Step 1: obtain repo from GitHub
+      - checkout
+      # Step 2: create virtual env and install dependencies
+      - run:
+          name: install dependencies
+          command: |
+            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
+            echo 'export IMAGE_NAME=python-circleci-docker' >> $BASH_ENV
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      # Step 3: run linter and tests
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            flake8 --exclude=venv* --statistics
+            pytest -v --cov=calculator
+			
+  deploy_to_staging:
+    docker:
+      - image: google/cloud-sdk
+    environment:
+      - GOOGLE_PROJECT_ID: "calculatorlibrary"
+      - GOOGLE_COMPUTE_ZONE: "us-central1-a"
+      - GOOGLE_CLUSTER_NAME: "cluster-1"
+      - DEPLOYMENT_NAME: api-ci-cd
+      - PROJECT_ID: calculatorlibrary
+      - CLUSTER_NAME: api-ci-cd
+      - CLUSTER_NAME_STAG: api-ci-cd-stag
+      - CLOUDSDK_COMPUTE_ZONE: us-central1-a
+      - CONTAINER_NAME: api-ci-cd
+      - IMAGE: api-ci-cd
+      - REG_ID: api-ci-cd
+      - REG_ID_PROD: ci-cd-prod
+      - IMG_TAG: 0.1.0
+      - PROJECT_NAME: api-ci-cd
+      - DEPLOYMENT_ENVIRONMENT: staging
+    steps:
+      - checkout
+      - run: 
+          name: Setup Google Cloud SDK
+          command: |
+            apt-get install -qq -y gettext
+			echo $ACCOUNT_KEY_STAGING > service_key.txt
+			base64 -i service_key.txt -d > ${HOME}/gcloud-service-key.json
+            gcloud auth activate-service-account ${ACCOUNT_ID} --key-file=${HOME}/gcloud-service-key.json
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+      - setup_remote_docker
+      
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build_and_test
+      - deploy_to_staging:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: master

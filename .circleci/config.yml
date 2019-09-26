@@ -61,7 +61,7 @@ jobs:
       - run: 
           name: Docker build and push
           command: |
-            echo "${IMAGE}  ${$CIRCLE_SHA1}"
+            echo "${IMAGE}  ${CIRCLE_SHA1}"
             apt-get install -y python3-venv
             pip install PyInstaller
             python3 -m venv venv

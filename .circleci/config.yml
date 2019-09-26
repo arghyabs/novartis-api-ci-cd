@@ -12,8 +12,6 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            echo 'export TAG=0.1.${CIRCLE_BUILD_NUM}' >> $BASH_ENV
-            echo 'export IMAGE_NAME=python-circleci-docker' >> $BASH_ENV
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
@@ -37,7 +35,6 @@ jobs:
       IMAGE: api-ci-cd
       REG_ID: api-ci-cd
       REG_ID_PROD: ci-cd-prod
-      IMG_TAG: 0.1.0
       PROJECT_NAME: api-ci-cd
       DEPLOYMENT_ENVIRONMENT: staging
     steps:
@@ -64,17 +61,17 @@ jobs:
       - run: 
           name: Docker build and push
           command: |
-            echo "${IMAGE}  ${IMG_TAG}"
+            echo "${IMAGE}  ${$CIRCLE_SHA1}"
             apt-get install -y python3-venv
             pip install PyInstaller
             python3 -m venv venv
             . venv/bin/activate
             pyinstaller -F calculator.py
             docker build -t ${IMAGE} .
-            docker tag ${IMAGE} gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
-            gcloud docker -- push gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
+            docker tag ${IMAGE} gcr.io/${PROJECT_ID}/${IMAGE}:$CIRCLE_SHA1
+            gcloud docker -- push gcr.io/${PROJECT_ID}/${IMAGE}:$CIRCLE_SHA1
             kubectl delete deployment --all --ignore-not-found
-            kubectl create deployment ${DEPLOYMENT_NAME} --image=gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
+            kubectl create deployment ${DEPLOYMENT_NAME} --image=gcr.io/${PROJECT_ID}/${IMAGE}:$CIRCLE_SHA1
             kubectl get pods
 workflows:
    version: 2

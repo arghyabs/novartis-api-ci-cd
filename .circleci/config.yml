@@ -72,7 +72,7 @@ jobs:
             pyinstaller -F calculator.py
             docker build -t ${IMAGE} .
             docker tag ${IMAGE} gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
-            sudo gcloud auth configure-docker
+            gcloud auth configure-docker -y
             gcloud docker -- push gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
 workflows:
    version: 2

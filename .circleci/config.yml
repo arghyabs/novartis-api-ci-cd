@@ -51,10 +51,22 @@ jobs:
             gcloud auth activate-service-account ${ACCOUNT_ID} --key-file=${HOME}/gcloud-service-key.json
             gcloud config set project $PROJECT_ID
             gcloud config set compute/zone $CLOUDSDK_COMPUTE_ZONE
+            EXISTING_CLUSTER=$(gcloud container clusters list --format="value(name)" --filter="name=$CLUSTER_NAME")
+            if [ "${EXISTING_CLUSTER}" != $CLUSTER_NAME ]
+            then
+              # Create cluster if it doesn't already exist
+              gcloud --quiet container clusters create $CLUSTER_NAME --num-nodes=1
+            else
+              gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+            fi
+            gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+      - setup_remote_docker
       - run: 
           name: Docker build and push
           command: |
             echo "${IMAGE} ${IMG_TAG}"
+            . venv/bin/activate
+            pyinstaller -F calculator.py
             docker build -t ${IMAGE} .
             docker tag ${IMAGE} gcr.io/${PROJECT_ID}/${IMAGE}:$IMG_TAG
             gcloud auth configure-docker
